@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071c13" />
+  <title>Northside United vs Riverpark Athletic — Footly</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .details-page .site-header { position: relative; }
+    .details-main { max-width: 1240px; margin: 0 auto; padding: 54px 5% 110px; }
+    .details-back { color: #9eafa4; font: 10px 'DM Mono'; text-decoration: none; letter-spacing: .1em; }
+    .details-back b { color: var(--lime); margin-right: 8px; }
+    .details-hero { margin: 36px 0 18px; border: 1px solid #ffffff2b; border-radius: 10px; overflow: hidden; background: #0d2a1e; }
+    .details-kicker { display: flex; justify-content: space-between; align-items: center; padding: 17px 24px; border-bottom: 1px solid #ffffff1c; font: 10px 'DM Mono'; color: #8ea296; letter-spacing: .1em; }
+    .details-score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center; padding: 45px 8%; }
+    .details-team { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .details-team strong { font: 600 22px/1.05 'Space Grotesk'; letter-spacing: -.05em; }
+    .details-team small, .details-scoreline small { color: #839b8e; font: 9px 'DM Mono'; letter-spacing: .12em; }
+    .details-scoreline { display: flex; align-items: center; gap: 18px; padding: 0 35px; }
+    .details-scoreline b { font: 600 78px/1 'Space Grotesk'; letter-spacing: -.12em; }
+    .details-scoreline span { color: #688375; font-size: 28px; }
+    .details-scoreline small { position: absolute; margin-top: 112px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+    .details-subnav { display: flex; gap: 25px; padding: 0 24px; border-top: 1px solid #ffffff1c; }
+    .details-subnav a { color: #8ea296; padding: 17px 0 14px; font: 10px 'DM Mono'; text-decoration: none; letter-spacing: .08em; }
+    .details-subnav a:first-child { color: var(--lime); border-bottom: 2px solid var(--lime); }
+    .details-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; }
+    .details-panel { background: #0d2a1e; border: 1px solid #ffffff24; border-radius: 10px; padding: 24px; }
+    .details-panel h2 { font: 600 20px 'Space Grotesk'; letter-spacing: -.05em; margin: 0 0 21px; }
+    .panel-label { color: #80968a; font: 9px 'DM Mono'; letter-spacing: .12em; text-transform: uppercase; }
+    .commentary-row { display: grid; grid-template-columns: 45px 28px 1fr; gap: 10px; align-items: start; padding: 14px 0; border-top: 1px solid #ffffff1c; color: #dce7dd; font-size: 12px; }
+    .commentary-row time { color: #88a092; font: 10px 'DM Mono'; }
+    .commentary-row .event-icon { padding-top: 2px; }
+    .commentary-row small { display: block; color: #789083; font-size: 10px; margin-top: 5px; }
+    .stat-row { display: grid; grid-template-columns: 1fr 55px 1fr; align-items: center; margin: 18px 0; font: 12px 'Space Grotesk'; }
+    .stat-row strong:first-child { text-align: left; color: var(--lime); }.stat-row strong:nth-child(3) { text-align: right; color: #dce7dd; }.stat-row span { text-align: center; color: #8ba095; font: 9px 'DM Mono'; text-transform: uppercase; }
+    .stat-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: -9px 0 22px; }.stat-bars i { display: block; height: 4px; border-radius: 5px; background: var(--lime); }.stat-bars i:last-child { background: #547563; }
+    .lineup { border-top: 1px solid #ffffff1c; padding: 14px 0; }.lineup:first-of-type { border-top: 0; padding-top: 0; }.lineup h3 { display: flex; justify-content: space-between; margin: 0 0 12px; font: 600 14px 'Space Grotesk'; }.lineup h3 span { color: #8da296; font: 9px 'DM Mono'; }
+    .player-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }.player { display: flex; align-items: center; gap: 9px; color: #cbdace; font-size: 11px; }.player-number { color: var(--lime); font: 10px 'DM Mono'; width: 18px; }.player small { color: #789083; margin-left: auto; font: 9px 'DM Mono'; }
+    .player-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }.player-card { padding: 13px; border: 1px solid #ffffff1c; border-radius: 7px; }.player-card b { display: block; color: #ecf4ec; font: 600 14px 'Space Grotesk'; }.player-card span { display: block; color: #80978b; font: 9px 'DM Mono'; margin-top: 4px; }.player-card strong { display: block; color: var(--lime); font: 600 22px 'Space Grotesk'; margin-top: 14px; }
+    @media(max-width:700px){ .details-main{padding:38px 20px 80px}.details-kicker{padding:15px}.details-kicker .competition{display:none}.details-score{padding:35px 8px}.details-team strong{font-size:16px}.details-scoreline{gap:8px;padding:0 8px}.details-scoreline b{font-size:52px}.details-subnav{gap:15px;padding:0 15px;overflow:auto}.details-subnav a{white-space:nowrap}.details-grid{grid-template-columns:1fr}.details-panel{padding:18px}.player-list{gap:8px}.player-cards{grid-template-columns:1fr 1fr} }
+    .lineup-panel{grid-column:1/-1;padding:24px!important}.lineup-panel h2{margin-bottom:8px}.lineup-tabs{display:flex;border-bottom:1px solid #ffffff24;margin:0 -24px 24px;padding:0 24px}.lineup-tab{background:none;border:0;border-bottom:2px solid transparent;color:#879b8f;cursor:pointer;font:600 13px 'Space Grotesk';padding:14px 50px}.lineup-tab.active{border-color:var(--lime);color:var(--lime)}.pitch{position:relative;max-width:860px;height:560px;margin:0 auto;border:2px solid #bce887;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(90deg,#3d8729 0,#3d8729 12.5%,#438e2d 12.5%,#438e2d 25%)}.pitch:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,#d4f1a3 50%,transparent 50.2%),radial-gradient(circle at 50% 50%,transparent 0 46px,#d4f1a3 47px 49px,transparent 50px)}.pitch:after{content:'';position:absolute;left:50%;top:50%;width:120px;height:120px;border:2px solid #d4f1a3;transform:translate(-50%,-50%);border-radius:50%;opacity:.8}.pitch-mark{position:absolute;z-index:1;border:2px solid #d4f1a3;left:50%;transform:translateX(-50%);width:260px;height:105px}.pitch-mark.top{top:-2px;border-top:0}.pitch-mark.bottom{bottom:-2px;border-bottom:0}.pitch-player{position:absolute;z-index:2;transform:translate(-50%,-50%);width:92px;text-align:center;color:#fff;font:700 10px 'DM Sans'}.pitch-avatar{display:grid;place-items:center;width:39px;height:39px;margin:0 auto 4px;border:2px solid #ecf8d3;border-radius:50%;background:#132d20;color:var(--lime);font:700 13px 'Space Grotesk';box-shadow:0 2px 8px #071c13aa}.pitch-player span:last-child{display:inline-block;background:#050a06;border-radius:6px;padding:5px 6px;white-space:nowrap}.pitch-player small{display:none}.formation-note{color:#7e9888;font:10px 'DM Mono';letter-spacing:.1em;margin-bottom:14px}.lineup-tip{color:#89a294;font-size:11px;margin:15px 0 0;text-align:center}@media(max-width:700px){.lineup-panel{padding:18px!important}.lineup-tabs{margin:0 -18px 18px;padding:0 18px}.lineup-tab{padding:13px 18px}.pitch{height:470px}.pitch-player{width:75px;font-size:8px}.pitch-avatar{width:32px;height:32px;font-size:10px}.pitch-player span:last-child{padding:4px}.pitch-mark{width:150px;height:76px}}
+  </style>
+  <style>
+    .individual-stats{margin-top:28px;border-top:1px solid #ffffff1c;padding-top:22px}.individual-stats h3{font:600 16px 'Space Grotesk';margin:0 0 14px}.player-stat-head,.player-stat-row{display:grid;grid-template-columns:2fr repeat(7,1fr);gap:8px;align-items:center}.player-stat-head{color:#789083;font:9px 'DM Mono';letter-spacing:.08em;text-transform:uppercase;padding:0 12px 10px}.player-stat-row{border-top:1px solid #ffffff12;color:#dce7dd;font-size:11px;padding:11px 12px}.player-stat-row span:not(:first-child),.player-stat-head span:not(:first-child){text-align:center}.player-stat-row span:last-child{color:var(--lime);font-weight:700}.player-stat-name{font-family:'Space Grotesk';font-weight:600}.player-stat-name small{color:#789083;font:9px 'DM Mono';margin-left:7px}@media(max-width:700px){.individual-stats{overflow-x:auto}.player-stat-head,.player-stat-row{min-width:700px}}
+  </style>
+</head>
+<body class="details-page">
+  <header class="site-header page-header">
+    <a class="logo" href="index.html" aria-label="Footly home"><span>F</span>Footly</a>
+    <nav class="desktop-nav"><a href="index.html#the-game">The game</a><a class="active-nav" href="live-matches.html">Live Matches</a><a href="index.html#community">Community</a><a href="index.html#features">Features</a></nav>
+    <a class="header-link" href="live-matches.html">All matches <b>↗</b></a>
+  </header>
+  <main class="details-main">
+    <a class="details-back" href="live-matches.html"><b>←</b> BACK TO LIVE MATCHES</a>
+    <section class="details-hero">
+      <div class="details-kicker"><span class="live-pill"><i></i> LIVE · 72:18</span><span class="competition">Sunday League · Semi-final</span><span>RIVERSIDE COMMUNITY STADIUM</span></div>
+      <div class="details-score"><div class="details-team"><span class="club-badge badge-north">N</span><strong>Northside<br />United</strong><small>HOME</small></div><div class="details-scoreline"><b>2</b><span>—</span><b>1</b><small>SECOND HALF</small></div><div class="details-team"><span class="club-badge badge-river">R</span><strong>Riverpark<br />Athletic</strong><small>AWAY</small></div></div>
+      <nav class="details-subnav"><a href="match-summary.html">SUMMARY</a><a href="match-commentary.html">COMMENTARY</a><a href="match-lineups.html">LINEUPS</a><a href="match-stats.html">STATS</a></nav>
+    </section>
+    <div class="details-grid">
+      <section class="details-panel" id="commentary"><span class="panel-label">Live feed</span><h2>Commentary</h2><div class="commentary-row"><time>72:18</time><span class="event-icon goal">●</span><div><b>Match continues</b><small>Northside United hold their lead.</small></div></div><div class="commentary-row"><time>61:04</time><span class="event-icon goal">●</span><div><b>GOAL · Samir Khan</b><small>Northside United · Assisted by Leo Martins</small></div></div><div class="commentary-row"><time>45:00</time><span>Ⅱ</span><div><b>Second half begins</b><small>Riverpark Athletic restart the match.</small></div></div><div class="commentary-row"><time>39:27</time><span class="event-icon goal">●</span><div><b>GOAL · Owen Clarke</b><small>Riverpark Athletic · Header from inside the box</small></div></div><div class="commentary-row"><time>14:11</time><span class="event-icon goal">●</span><div><b>GOAL · Leo Martins</b><small>Northside United · Right-footed finish</small></div></div></section>
+      <section class="details-panel" id="stats"><span class="panel-label">Match numbers</span><h2>Scorecard</h2><div class="stat-row"><strong>54%</strong><span>Possession</span><strong>46%</strong></div><div class="stat-bars"><i></i><i></i></div><div class="stat-row"><strong>8</strong><span>Shots</span><strong>6</strong></div><div class="stat-bars"><i></i><i></i></div><div class="stat-row"><strong>4</strong><span>On target</span><strong>3</strong></div><div class="stat-bars"><i></i><i></i></div><div class="stat-row"><strong>3</strong><span>Corners</span><strong>2</strong></div><div class="stat-bars"><i></i><i></i></div><div class="stat-row"><strong>7</strong><span>Fouls</span><strong>9</strong></div></section>
+      <section class="details-panel lineup-panel" id="lineups"><span class="panel-label">Starting XI · Confirmed</span><h2>Lineups</h2><div class="lineup-tabs"><button class="lineup-tab active" data-team="northside">Northside United</button><button class="lineup-tab" data-team="riverpark">Riverpark Athletic</button></div><div class="formation-note" id="formation-note">FORMATION · 4-3-3</div><div class="pitch" id="pitch"><div class="pitch-mark top"></div><div class="pitch-mark bottom"></div></div><p class="lineup-tip">Tap a team above to view every player on the pitch.</p><div class="individual-stats" id="individual-stats"></div></section>
+      <section class="details-panel" id="summary"><span class="panel-label">Player performance</span><h2>Key players</h2><div class="player-cards"><div class="player-card"><b>Samir Khan</b><span>Northside · Midfielder</span><strong>1 ⚽</strong></div><div class="player-card"><b>Leo Martins</b><span>Northside · Forward</span><strong>1 ⚽ 1 A</strong></div><div class="player-card"><b>Owen Clarke</b><span>Riverpark · Forward</span><strong>1 ⚽</strong></div><div class="player-card"><b>Alex Reed</b><span>Northside · Goalkeeper</span><strong>3 SAVES</strong></div></div></section>
+    </div>
+  </main>
+  <script>
+    const squads = {
+      northside: { formation: '4-3-3', players: [['01','Alex Reed','GK',88,50],['02','Tom Ellis','RB',70,19],['04','Jayden Cole','CB',70,40],['05','Marco Silva','CB',70,60],['03','Ben Ward','LB',70,81],['08','Samir Khan','CM',50,28],['10','Leo Martins','AM',50,50],['06','Noah Price','CM',50,72],['11','Finn Doyle','LW',28,32],['09','Eli Brooks','ST',18,50],['07','Mason Gray','RW',28,68]] },
+      riverpark: { formation: '4-4-2', players: [['01','Chris Moss','GK',88,50],['02','Dylan Fox','RB',70,18],['04','Owen Clarke','CB',70,40],['05','Luca Webb','CB',70,60],['03','Ravi Patel','LB',70,82],['08','George Bell','RM',50,18],['06','Isaac Hall','CM',50,40],['10','Kai James','CM',50,60],['11','Milo Shaw','LM',50,82],['09','Evan Ross','ST',20,40],['07','Theo King','ST',20,60]] }
+    };
+    const playerStats = {
+      northside: [['Alex Reed','GK',72,0,0,0,24,'7.4'],['Tom Ellis','RB',72,0,0,1,42,'7.1'],['Jayden Cole','CB',72,0,0,0,51,'7.3'],['Marco Silva','CB',72,0,0,0,48,'7.2'],['Ben Ward','LB',72,0,0,2,39,'7.0'],['Samir Khan','CM',72,1,0,2,46,'8.4'],['Leo Martins','AM',72,1,1,3,38,'8.7'],['Noah Price','CM',72,0,0,1,44,'7.5'],['Finn Doyle','LW',66,0,0,2,25,'7.2'],['Eli Brooks','ST',72,0,0,3,19,'7.6'],['Mason Gray','RW',69,0,0,2,28,'7.3']],
+      riverpark: [['Chris Moss','GK',72,0,0,0,21,'6.9'],['Dylan Fox','RB',72,0,0,1,37,'6.8'],['Owen Clarke','CB',72,1,0,2,33,'8.0'],['Luca Webb','CB',72,0,0,0,49,'6.9'],['Ravi Patel','LB',72,0,0,1,35,'7.0'],['George Bell','RM',72,0,0,2,31,'7.1'],['Isaac Hall','CM',72,0,0,1,54,'7.2'],['Kai James','CM',72,0,0,0,47,'7.0'],['Milo Shaw','LM',62,0,0,1,26,'6.8'],['Evan Ross','ST',72,0,0,2,17,'6.9'],['Theo King','ST',72,0,0,1,22,'7.0']]
+    };
+    const pitch = document.getElementById('pitch');
+    const statsBox = document.getElementById('individual-stats');
+    const note = document.getElementById('formation-note');
+    function renderSquad(team) { const squad = squads[team]; pitch.querySelectorAll('.pitch-player').forEach(player => player.remove()); note.textContent = 'FORMATION · ' + squad.formation; squad.players.forEach(([number,name,position,top,left]) => { const player = document.createElement('div'); player.className = 'pitch-player'; player.style.top = top + '%'; player.style.left = left + '%'; player.innerHTML = '<span class="pitch-avatar">' + number + '</span><span>' + number + '. ' + name + '</span><small>' + position + '</small>'; pitch.appendChild(player); }); renderStats(team); }
+    function renderStats(team) { statsBox.innerHTML = '<h3>' + (team === 'northside' ? 'Northside United' : 'Riverpark Athletic') + ' · Individual stats</h3><div class="player-stat-head"><span>Player</span><span>Min</span><span>G</span><span>A</span><span>S</span><span>Tkl</span><span>Pass</span><span>Rating</span></div>' + playerStats[team].map(([name,position,minutes,goals,assists,shots,tackles,rating]) => { const passes = Math.round(minutes * .62) - tackles; return '<div class="player-stat-row"><span class="player-stat-name">' + name + ' <small>' + position + '</small></span><span>' + minutes + "'</span><span>" + goals + '</span><span>' + assists + '</span><span>' + shots + '</span><span>' + tackles + '</span><span>' + passes + '</span><span>' + rating + '</span></div>'; }).join(''); }
+    document.querySelectorAll('.lineup-tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.lineup-tab').forEach(item => item.classList.remove('active')); tab.classList.add('active'); renderSquad(tab.dataset.team); }));
+    renderSquad('northside');
+  </script>
+</body>
+</html>
+<script type="module" src="./live-render.js"></script><script src="./back-nav.js"></script>
+<script src="./hash-links.js"></script>

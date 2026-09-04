@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owns(data) { return signedIn() && data.ownerId == request.auth.uid; }
+
+    match /users/{userId} {
+      allow read, create, update: if signedIn() && request.auth.uid == userId;
+    }
+    match /teams/{teamId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if owns(resource.data);
+    }
+    match /matches/{matchId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.organizerId == request.auth.uid;
+      match /events/{eventId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
+        allow update, delete: if signedIn() && resource.data.organizerId == request.auth.uid;
+      }
+    }
+    match /playerStats/{statId} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.resource.data.userId == request.auth.uid;
+    }
+    match /communityPosts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.authorId == request.auth.uid;
+    }
+  }
+}

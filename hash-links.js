@@ -1,0 +1,2 @@
+const pages={'#the-game':'the-game.html','#community':'community.html','#features':'features.html','#match-details':'match-details.html','#summary':'match-summary.html','#commentary':'match-commentary.html','#lineups':'match-lineups.html','#stats':'match-stats.html'};
+document.querySelectorAll('a[href^="#"]').forEach(link=>{const destination=pages[link.getAttribute('href')];if(destination)link.href=destination});

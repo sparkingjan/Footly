@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071c13" />
+  <title>Footly — Football, in motion</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .home-page .header-link { display: none; }
+    .home-page .auth-actions { margin-left: auto; }
+    .home-page .auth-logout { border:1px solid var(--lime); border-radius:7px; padding:10px 13px; color:var(--lime); background:transparent; font:10px 'DM Mono'; cursor:pointer; }
+    .home-page { overflow: hidden; }
+    .home-page .intro-section,
+    .home-page .matches-section { display: none; }
+    .home-page .primary-cta { display: inline-block; text-decoration: none; }
+  </style>
+</head>
+<body class="home-page">
+  <main class="landing">
+    <video class="background-video" autoplay muted loop playsinline poster="Homevideo.mp4"><source src="Homevideo.mp4" type="video/mp4" /></video>
+    <div class="video-overlay"></div>
+    <header class="site-header">
+      <a class="logo" href="index.html" aria-label="Footly home"><span>F</span>Footly</a>
+      <nav class="desktop-nav"><a href="the-game.html">The game</a><a class="active-nav" href="live-matches.html">Live Matches</a><a href="community.html">Community</a><a href="features.html">Features</a></nav>
+      <button class="header-link" data-scroll="the-game">Get started <b>↗</b></button>
+    </header>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><p class="eyebrow"><i></i> The home of local football</p><div class="title-mask"><h1 id="hero-title">Footly</h1></div><p class="hero-text">Every pitch has a story.<br />Make yours count.</p><div class="hero-actions"><a class="primary-cta" href="live-matches.html" target="_blank" rel="noopener">Explore Footly <span>↗</span></a></div></div>
+      <div class="hero-note"><span>01</span><div></div><span>PLAY THE BEAUTIFUL GAME</span></div>
+    </section>
+    <footer class="site-footer"><div><span class="live-dot"></span> Built for every level of the game</div><div>Grassroots · Academy · Amateur · Pro</div></footer>
+  </main>
+  <section class="intro-section" id="the-game"><p class="eyebrow dark-eyebrow">One place. Every football moment.</p><h2>Your game,<br /><em>in motion.</em></h2><p class="intro-copy">Create your team, build your squad, record every match and follow the players who make your football world move.</p><div class="feature-row" id="features"><article><span>01</span><h3>Build your squad</h3><p>Players, lineups and formations made simple for any format.</p></article><article><span>02</span><h3>Live every moment</h3><p>Goals, assists, cards and substitutions — captured as they happen.</p></article><article><span>03</span><h3>Own your story</h3><p>Turn every result into stats, history and something worth sharing.</p></article></div></section>
+  <section class="matches-section" id="live-matches" aria-labelledby="matches-title">
+    <div class="matches-topline"><p class="eyebrow"><i></i> Match centre</p><span class="match-date">SATURDAY · 03 SEP 2026</span></div>
+    <div class="matches-heading"><div><h2 id="matches-title">Live<br /><em>Matches.</em></h2><p>Follow the game as it happens.</p></div><button class="filter-button">All competitions <span>⌄</span></button></div>
+    <div class="match-layout">
+      <article class="featured-match">
+        <div class="match-card-header"><span class="live-pill"><i></i> LIVE</span><span class="competition">Sunday League · Semi-final</span><span class="match-minute">72:18</span></div>
+        <div class="scoreboard"><div class="club"><span class="club-badge badge-north">N</span><strong>Northside<br />United</strong><small>HOME</small></div><div class="score"><b>2</b><span>—</span><b>1</b><small>SECOND HALF</small></div><div class="club away"><span class="club-badge badge-river">R</span><strong>Riverpark<br />Athletic</strong><small>AWAY</small></div></div>
+        <div class="match-events"><div><span class="event-time">14'</span><span class="event-icon goal">●</span><span>Leo Martins</span><small>Northside United</small></div><div><span class="event-time">39'</span><span class="event-icon goal">●</span><span>Owen Clarke</span><small>Riverpark Athletic</small></div><div><span class="event-time">61'</span><span class="event-icon goal">●</span><span>Samir Khan</span><small>Northside United</small></div></div>
+        <div class="match-card-footer"><span>● Updates every minute</span><a href="#match-details">Match details <b>↗</b></a></div>
+      </article>
+      <div class="side-matches"><div class="side-title"><span>Other live games</span><span class="live-count"><i></i> 3 LIVE</span></div><article class="fixture"><div class="fixture-meta"><span class="live-pill"><i></i> LIVE</span><span>64'</span></div><div class="fixture-teams"><span>Eastvale Rovers</span><b>0</b><b>2</b><span>Oakfield FC</span></div><small>Community Cup · Quarter-final</small></article><article class="fixture"><div class="fixture-meta"><span class="live-pill"><i></i> LIVE</span><span>HT</span></div><div class="fixture-teams"><span>Harbour Town</span><b>1</b><b>1</b><span>West End Boys</span></div><small>Saturday Division One</small></article><article class="fixture"><div class="fixture-meta upcoming"><span>NEXT · 16:30</span></div><div class="fixture-teams"><span>Park Lane</span><b>–</b><b>–</b><span>Union 96</span></div><small>Sunday League · Final</small></article></div>
+    </div>
+  </section>
+  <script src="script.js"></script>
+</body>
+</html>
+<script src="./hash-links.js"></script>
