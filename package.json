@@ -1,0 +1,22 @@
+{
+  "name": "footly",
+  "version": "1.0.0",
+  "description": "Football in motion - Local football management platform",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static HTML project - no build needed'",
+    "lint": "echo 'No linter configured yet'"
+  },
+  "keywords": [
+    "football",
+    "soccer",
+    "match",
+    "scorekeeper"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
