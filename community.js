@@ -1,3 +1,4 @@
+import {showAvatars} from './avatars.js';
 import { auth, db, firebaseConfigured, requireUser, collection, doc, addDoc, getDocs, deleteDoc, query, orderBy, limit, startAfter, serverTimestamp } from './firebase-client.js';
 const form=document.getElementById('discussion-form'),text=document.getElementById('post-text'),feed=document.getElementById('discussion-feed'),message=document.getElementById('discussion-message'),submit=document.getElementById('post-submit');
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
@@ -9,8 +10,9 @@ async function loadPosts(append=false){
   try{
     const snapshot=await getDocs(query(collection(db,'communityPosts'),orderBy('createdAt','desc'),...(append&&cursor?[startAfter(cursor)]:[]),limit(50)));
     more.hidden=snapshot.size<50;cursor=snapshot.docs.at(-1)||cursor;
-    const html=snapshot.docs.map(item=>{const post=item.data();return `<article class="discussion-post"><div class="post-head"><span class="post-author">${escape(post.authorName||'Footly user')}</span><span class="post-date">${escape(formatDate(post.createdAt))}</span></div><p class="post-text">${escape(post.text)}</p>${post.authorId===currentUser.uid?`<button class="post-delete" data-delete="${escape(item.id)}" type="button">Delete</button>`:''}</article>`}).join('');
+    const html=snapshot.docs.map(item=>{const post=item.data();return `<article class="discussion-post"><div class="post-head"><span class="community-avatar" data-avatar-user="${escape(post.authorId)}" aria-hidden="true">F</span><span class="post-author">${escape(post.authorName||'Footly user')}</span><span class="post-date">${escape(formatDate(post.createdAt))}</span></div><p class="post-text">${escape(post.text)}</p>${post.authorId===currentUser.uid?`<button class="post-delete" data-delete="${escape(item.id)}" type="button">Delete</button>`:''}</article>`}).join('');
     if(append)feed.insertAdjacentHTML('beforeend',html);else feed.innerHTML=html||'<p class="community-empty">No discussions yet. Start the first one.</p>';
+    await showAvatars(feed);
   }catch(error){console.error(error);message.textContent='Could not load discussions. Please reload to retry.'}
   finally{loading=false;more.disabled=false}
 }

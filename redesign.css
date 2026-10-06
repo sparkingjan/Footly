@@ -15,3 +15,5 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 
 .profile-avatar{overflow:hidden}.profile-avatar img{width:100%;height:100%;object-fit:cover}.profile-photo-controls{max-width:480px;margin-bottom:26px}.profile-photo-controls p{font-size:13px;color:var(--muted)}.profile-photo-controls button{min-height:44px;border:1px solid var(--line);border-radius:9px;padding:10px 16px;background:var(--ink);color:white;margin:4px 8px 4px 0}.profile-photo-controls #photo-cancel{background:white;color:var(--ink)}#photo-preview img{display:block;width:96px;height:96px;object-fit:cover;border-radius:18px;margin:16px 0}
+
+.profile-dot,.community-avatar{overflow:hidden;flex:none}.profile-dot img,.community-avatar img{width:100%;height:100%;object-fit:cover}.community-avatar{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#e6eddf;color:var(--ink)}.post-head .post-author{margin-right:auto}.workspace-rail{overflow-y:auto}

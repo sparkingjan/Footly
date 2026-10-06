@@ -53,7 +53,9 @@ test('profile photos enforce owner, size, trusted timestamp and annual lock',{sk
  await assertFails(updateDoc(ref,{changedAt:new Date(0)}));
  await assertFails(updateDoc(ref,{image:deleteField()}));
  await assertFails(deleteDoc(ref));
- await assertFails(getDoc(doc(env.authenticatedContext('bob').firestore(),'profilePhotos','photo-owner')));
+ await assertSucceeds(getDoc(doc(env.authenticatedContext('bob').firestore(),'profilePhotos','photo-owner')));
+ await assertFails(getDocs(collection(db,'profilePhotos')));
+ await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(),'profilePhotos','photo-owner')));
  await assertFails(setDoc(doc(env.authenticatedContext('bob').firestore(),'profilePhotos','photo-owner'),photo));
  await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'profilePhotos','photo-owner'),{changedAt:new Date(Date.now()-364*86400000)})});
  await assertFails(setDoc(ref,photo));

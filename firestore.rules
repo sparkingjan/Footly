@@ -38,7 +38,8 @@ service cloud.firestore {
           && request.resource.data.mime in ['image/jpeg', 'image/png', 'image/webp']
           && request.resource.data.changedAt == request.time;
       }
-      allow read: if signedIn() && request.auth.uid == userId;
+      allow get: if signedIn();
+      allow list: if false;
       allow create: if signedIn() && request.auth.uid == userId && validPhoto();
       allow update: if signedIn() && request.auth.uid == userId && validPhoto()
         && request.time >= resource.data.changedAt + duration.value(365, 'd');

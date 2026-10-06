@@ -57,6 +57,12 @@ try{
     await page.reload();await page.getByText('Photo locked.',{exact:false}).waitFor();
     assert.equal(await page.locator('.profile-avatar img').evaluate(el=>el.complete&&el.naturalWidth>0),true);
     await page.screenshot({path:'test-results/profile-photo.png',fullPage:true});
+    await page.locator('.profile-dot img').waitFor();
+    await page.goto(url+'community.html');await page.locator('#post-text').fill('Photo visibility test');await page.locator('#post-submit').click();
+    await page.locator('.discussion-post .community-avatar img').waitFor();await page.locator('.profile-dot img').waitFor();
+    page.once('dialog',dialog=>dialog.accept());await page.locator('.post-delete').click();await page.getByText('No discussions yet. Start the first one.').waitFor();
+    await page.goto(url+'profile.html');
+
     await page.locator('#portal-logout').click();await page.waitForURL('**/auth.html');assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
   }
   assert.deepEqual(errors,[]);console.log('PASS: team save/reload/substitution, match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');

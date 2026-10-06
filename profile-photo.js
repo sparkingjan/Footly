@@ -47,7 +47,7 @@ fileInput.addEventListener('change',async()=>{
 });
 save.addEventListener('click',async()=>{
  if(!pending||locked||busy)return;busy=true;save.disabled=true;cancel.disabled=true;add.disabled=true;status.textContent='Saving photo…';
- try{await setDoc(doc(db,'profilePhotos',auth.currentUser.uid),{...pending,changedAt:serverTimestamp()});reset();await refresh();}
+ try{await setDoc(doc(db,'profilePhotos',auth.currentUser.uid),{...pending,changedAt:serverTimestamp()});reset();await refresh();window.dispatchEvent(new Event('footly-photo-updated'));}
  catch{try{await refresh();if(!locked)status.textContent='Could not save your photo. Please try again.';}catch{status.textContent='Could not save or refresh your photo. Check your connection and reload.';add.disabled=true;}}
  finally{busy=false;save.disabled=false;cancel.disabled=false;}
 });
