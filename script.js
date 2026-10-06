@@ -29,3 +29,10 @@ if (document.body.classList.contains('home-page')) {
     logout.addEventListener('click', () => signOut(firebaseAuth));
   }).catch(() => {});
 }
+
+// Respect reduced motion and data-saving preferences before loading the video.
+const backgroundVideo=document.querySelector('.background-video');
+if(backgroundVideo&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){
+  const playBackground=()=>{if(document.hidden)backgroundVideo.pause();else backgroundVideo.play().catch(()=>{})};
+  document.addEventListener('visibilitychange',playBackground);playBackground();
+}

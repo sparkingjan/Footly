@@ -3,33 +3,71 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function owns(data) { return signedIn() && data.ownerId == request.auth.uid; }
+    function text(value, max) { return value is string && value.size() > 0 && value.size() <= max; }
+    function validTeam(team) {
+      return team == null || (team is map && text(team.name, 100)
+        && text(team.captain, 100) && team.players is list && team.players.size() <= 50
+        && team.lineup is list && team.lineup.size() <= 11);
+    }
+    function validTeams(data) {
+      return validTeam(data.get('homeTeam', null)) && validTeam(data.get('awayTeam', null));
+    }
+    function validMatch(data) {
+      return text(data.home, 100) && text(data.away, 100)
+        && data.homeScore is int && data.homeScore >= 0 && data.homeScore <= 500
+        && data.awayScore is int && data.awayScore >= 0 && data.awayScore <= 500
+        && data.minute is int && data.minute >= 0 && data.minute <= 300
+        && data.events is list && data.events.size() <= 500;
+    }
+    function matchOwner(matchId) {
+      return signedIn() && get(/databases/$(database)/documents/matches/$(matchId)).data.organizerId == request.auth.uid;
+    }
 
     match /users/{userId} {
-      allow read, create, update: if signedIn() && request.auth.uid == userId;
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create, update: if signedIn() && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['email', 'displayName', 'createdAt', 'updatedAt'])
+        && text(request.resource.data.displayName, 100) && text(request.resource.data.email, 320);
     }
     match /teams/{teamId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if owns(resource.data);
+      allow read: if signedIn() && request.auth.uid == teamId;
+      allow create: if signedIn() && request.auth.uid == teamId && request.resource.data.ownerId == request.auth.uid && validTeams(request.resource.data);
+      allow update: if owns(resource.data) && request.auth.uid == teamId && request.resource.data.ownerId == resource.data.ownerId && validTeams(request.resource.data);
+      allow delete: if owns(resource.data) && request.auth.uid == teamId;
     }
     match /matches/{matchId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.organizerId == request.auth.uid;
+      allow read: if signedIn() && resource.data.organizerId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid
+        && validMatch(request.resource.data) && request.resource.data.createdAt == request.time
+        && request.resource.data.schemaVersion == 2 && request.resource.data.revision == 0;
+      allow update: if signedIn() && resource.data.organizerId == request.auth.uid
+        && request.resource.data.organizerId == resource.data.organizerId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validMatch(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['homeScore', 'awayScore', 'minute', 'events', 'schemaVersion', 'revision', 'updatedAt'])
+        && request.resource.data.schemaVersion == 2
+        && request.resource.data.revision == resource.data.get('revision', 0) + 1;
+      allow delete: if signedIn() && resource.data.organizerId == request.auth.uid;
       match /events/{eventId} {
-        allow read: if signedIn();
-        allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
-        allow update, delete: if signedIn() && resource.data.organizerId == request.auth.uid;
+        allow read, delete: if matchOwner(matchId);
+        // Legacy history remains readable/deletable. New writes are atomic in the parent.
+        allow create, update: if false;
       }
     }
     match /playerStats/{statId} {
-      allow read: if signedIn();
-      allow write: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId;
     }
     match /communityPosts/{postId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.authorId == request.auth.uid;
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 50;
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['text', 'authorId', 'authorName', 'createdAt'])
+        && text(request.resource.data.text, 2000) && text(request.resource.data.authorName, 100)
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.authorId == request.auth.uid;
     }
   }
 }

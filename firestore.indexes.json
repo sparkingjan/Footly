@@ -1,0 +1,10 @@
+{
+  "indexes": [{ "collectionGroup": "matches", "queryScope": "COLLECTION", "fields": [
+    { "fieldPath": "organizerId", "order": "ASCENDING" },
+    { "fieldPath": "createdAt", "order": "DESCENDING" }
+  ] }],
+  "fieldOverrides": [
+    { "collectionGroup": "matches", "fieldPath": "events", "indexes": [] },
+    { "collectionGroup": "matches", "fieldPath": "players", "indexes": [] }
+  ]
+}

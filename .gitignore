@@ -6,3 +6,7 @@ firestore-debug.log
 .env
 .env.*
 !.env.example
+public/
+test-results/
+playwright-report/
+.tools/
