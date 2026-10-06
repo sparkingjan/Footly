@@ -1,0 +1,11 @@
+const menu=document.querySelector('.home-menu');
+const nav=document.querySelector('.home-nav');
+menu.addEventListener('click',()=>{const open=nav.classList.toggle('is-open');menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&nav.classList.contains('is-open')){nav.classList.remove('is-open');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Open navigation');menu.focus();}});
+const video=document.querySelector('.background-video');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let wantsPlayback=!reduced.matches&&!navigator.connection?.saveData;
+const play=()=>video.play().catch(()=>{});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(wantsPlayback)play();});
+reduced.addEventListener('change',()=>{if(reduced.matches){wantsPlayback=false;video.pause();}});
+if(wantsPlayback)play();
