@@ -6,6 +6,15 @@ panel.className='profile-photo-controls';
 panel.innerHTML='<button id="photo-add" type="button" disabled aria-label="Add profile picture">+ Add photo</button><input id="photo-file" type="file" accept="image/png,image/jpeg,image/webp" hidden><p>JPG, PNG or WebP, under 20 KB (20,000 bytes). Once saved, your photo is locked for 365 days.</p><div id="photo-preview" hidden><img alt="New profile picture preview"><button id="photo-save" type="button">Save and lock for one year</button><button id="photo-cancel" type="button">Cancel</button></div><p id="photo-status" role="status" aria-live="polite">Loading photo…</p>';
 avatar.after(panel);
 const add=panel.querySelector('#photo-add'),fileInput=panel.querySelector('#photo-file'),preview=panel.querySelector('#photo-preview'),save=panel.querySelector('#photo-save'),cancel=panel.querySelector('#photo-cancel'),status=panel.querySelector('#photo-status');
+const retry=document.createElement('button');retry.type='button';retry.textContent='Retry loading photo';retry.hidden=true;status.after(retry);
+function loadError(error){
+ add.disabled=true;retry.hidden=false;
+ status.textContent=error?.code==='permission-denied'
+  ? 'Photo access was denied. The site’s Firebase photo rules may need updating. Retry after they are deployed.'
+  : 'Could not connect to your photo record. Check your connection and retry.';
+}
+async function loadPhoto(){retry.disabled=true;retry.hidden=true;try{await refresh();}catch(error){loadError(error);}finally{retry.disabled=false;}}
+retry.addEventListener('click',loadPhoto);
 let pending=null,previewUrl=null,locked=false,busy=false;
 function reset(){pending=null;preview.hidden=true;fileInput.value='';preview.querySelector('img').removeAttribute('src');previewUrl=null;}
 async function refresh(){
@@ -42,5 +51,5 @@ save.addEventListener('click',async()=>{
  catch{try{await refresh();if(!locked)status.textContent='Could not save your photo. Please try again.';}catch{status.textContent='Could not save or refresh your photo. Check your connection and reload.';add.disabled=true;}}
  finally{busy=false;save.disabled=false;cancel.disabled=false;}
 });
-if(firebaseConfigured&&auth?.currentUser){try{await refresh();}catch{status.textContent='Could not load your photo. Reload to try again.';}}
+if(firebaseConfigured&&auth?.currentUser){await loadPhoto();}
 else status.textContent='Sign in to add a profile picture.';
