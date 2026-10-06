@@ -29,6 +29,22 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['email', 'displayName', 'createdAt', 'updatedAt'])
         && text(request.resource.data.displayName, 100) && text(request.resource.data.email, 320);
     }
+    match /profilePhotos/{userId} {
+      function validPhoto() {
+        return request.resource.data.keys().hasOnly(['image', 'mime', 'changedAt'])
+          && request.resource.data.image is bytes
+          && request.resource.data.image.size() > 0
+          && request.resource.data.image.size() < 20000
+          && request.resource.data.mime in ['image/jpeg', 'image/png', 'image/webp']
+          && request.resource.data.changedAt == request.time;
+      }
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn() && request.auth.uid == userId && validPhoto();
+      allow update: if signedIn() && request.auth.uid == userId && validPhoto()
+        && request.time >= resource.data.changedAt + duration.value(365, 'd');
+      // Deletion would let a client bypass the annual replacement lock.
+      allow delete: if false;
+    }
     match /teams/{teamId} {
       allow read: if signedIn() && request.auth.uid == teamId;
       allow create: if signedIn() && request.auth.uid == teamId && request.resource.data.ownerId == request.auth.uid && validTeams(request.resource.data);

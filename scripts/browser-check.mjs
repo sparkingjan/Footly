@@ -47,7 +47,17 @@ try{
   await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:'test-results/dashboard-desktop.png',fullPage:true});
   if(cloud){
     await page.goto(url+'community.html');await page.locator('#post-text').fill('Test discussion <img src=x onerror=alert(1)>');await page.locator('#post-submit').click();await page.locator('.discussion-post').waitFor();assert.equal(await page.locator('.discussion-post img').count(),0);page.once('dialog',dialog=>dialog.accept());await page.locator('.post-delete').click();await page.getByText('No discussions yet. Start the first one.').waitFor();
-    await page.goto(url+'profile.html');await page.locator('#portal-logout').click();await page.waitForURL('**/auth.html');assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
+    await page.goto(url+'profile.html');await page.locator('#photo-add:enabled').waitFor();
+    await page.locator('#photo-file').setInputFiles({name:'large.png',mimeType:'image/png',buffer:Buffer.alloc(20000)});
+    await page.getByText('Choose an image smaller than 20 KB (20,000 bytes).',{exact:true}).waitFor();
+    const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWZkAAAAASUVORK5CYII=','base64');
+    await page.locator('#photo-file').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:image});
+    await page.locator('#photo-preview:not([hidden])').waitFor();await page.locator('#photo-save').click();
+    await page.getByText('Photo locked.',{exact:false}).waitFor();assert.equal(await page.locator('#photo-add').isDisabled(),true);
+    await page.reload();await page.getByText('Photo locked.',{exact:false}).waitFor();
+    assert.equal(await page.locator('.profile-avatar img').evaluate(el=>el.complete&&el.naturalWidth>0),true);
+    await page.screenshot({path:'test-results/profile-photo.png',fullPage:true});
+    await page.locator('#portal-logout').click();await page.waitForURL('**/auth.html');assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
   }
   assert.deepEqual(errors,[]);console.log('PASS: team save/reload/substitution, match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');
 }finally{await browser?.close();server.kill()}

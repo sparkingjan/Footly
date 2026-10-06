@@ -1,7 +1,7 @@
 import test, { before, after } from 'node:test';
 import { readFile } from 'node:fs/promises';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, setDoc, updateDoc, getDoc, collection, getDocs, query, limit, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc, collection, getDocs, query, limit, serverTimestamp, deleteDoc, Bytes, deleteField } from 'firebase/firestore';
 const enabled = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
 let env;
 before(async () => {
@@ -40,4 +40,24 @@ test('community text and query limits are enforced',{skip:!enabled},async()=>{
   await assertFails(getDocs(collection(db,'communityPosts')));
   await assertSucceeds(getDocs(query(collection(db,'communityPosts'),limit(50))));
   await assertFails(deleteDoc(doc(env.authenticatedContext('bob').firestore(),'communityPosts','valid')));
+});
+
+test('profile photos enforce owner, size, trusted timestamp and annual lock',{skip:!enabled},async()=>{
+ const db=env.authenticatedContext('photo-owner').firestore(), ref=doc(db,'profilePhotos','photo-owner');
+ const photo={image:Bytes.fromUint8Array(new Uint8Array([1,2,3])),mime:'image/png',changedAt:serverTimestamp()};
+ await assertFails(setDoc(ref,{...photo,image:Bytes.fromUint8Array(new Uint8Array(20000))}));
+ await assertFails(setDoc(ref,{...photo,mime:'image/svg+xml'}));
+ await assertFails(setDoc(ref,{...photo,changedAt:new Date(0)}));
+ await assertSucceeds(setDoc(ref,photo));
+ await assertFails(setDoc(ref,photo));
+ await assertFails(updateDoc(ref,{changedAt:new Date(0)}));
+ await assertFails(updateDoc(ref,{image:deleteField()}));
+ await assertFails(deleteDoc(ref));
+ await assertFails(getDoc(doc(env.authenticatedContext('bob').firestore(),'profilePhotos','photo-owner')));
+ await assertFails(setDoc(doc(env.authenticatedContext('bob').firestore(),'profilePhotos','photo-owner'),photo));
+ await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'profilePhotos','photo-owner'),{changedAt:new Date(Date.now()-364*86400000)})});
+ await assertFails(setDoc(ref,photo));
+ await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'profilePhotos','photo-owner'),{changedAt:new Date(Date.now()-366*86400000)})});
+ await assertSucceeds(setDoc(ref,{...photo,image:Bytes.fromUint8Array(new Uint8Array(19999))}));
+ await assertFails(setDoc(ref,photo));
 });
