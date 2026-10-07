@@ -1,11 +1,33 @@
 plugins { id 'com.android.application' }
+def signingPropertiesFile = rootProject.file('.signing/release.properties')
+def releaseKeys = new Properties()
+if (signingPropertiesFile.isFile()) {
+ signingPropertiesFile.withInputStream { releaseKeys.load(it) }
+}
+tasks.register('checkReleaseSigning') {
+ doLast {
+  if (!signingPropertiesFile.isFile()) throw new GradleException('Release signing is missing. Restore android/.signing from your private backup.')
+ }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach { dependsOn 'checkReleaseSigning' }
+
 android {
  namespace 'app.footly.android'
  compileSdk 36
- defaultConfig { applicationId 'app.footly.android'; minSdk 26; targetSdk 36; versionCode 2; versionName '1.1.0' }
+ defaultConfig { applicationId 'app.footly.android'; minSdk 26; targetSdk 36; versionCode 3; versionName '1.1.0' }
  compileOptions { coreLibraryDesugaringEnabled true; sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
  testOptions { unitTests.includeAndroidResources = true }
- buildTypes { release { minifyEnabled false } }
+ signingConfigs {
+ release {
+  if (signingPropertiesFile.isFile()) {
+   storeFile rootProject.file(releaseKeys.getProperty('storeFile'))
+   storePassword releaseKeys.getProperty('storePassword')
+   keyAlias releaseKeys.getProperty('keyAlias')
+   keyPassword releaseKeys.getProperty('keyPassword')
+  }
+ }
+}
+buildTypes { release { debuggable false; minifyEnabled false; signingConfig signingConfigs.release } }
 }
 dependencies {
  implementation 'androidx.activity:activity:1.10.1'

@@ -31,8 +31,20 @@ Open this directory in Android Studio, or use JDK 17+ and Android SDK 36:
     ./gradlew assembleDebug testDebugUnitTest lintDebug
 
 Windows: gradlew.bat. Configure ANDROID_HOME or an ignored local.properties with sdk.dir.
-APK: app/build/outputs/apk/debug/app-debug.apk.
+Debug APK: app/build/outputs/apk/debug/app-debug.apk.
 
-This is a **debug-signed test APK**, not a Play Store release. Install over the previous debug build to update. A production release needs stable private signing, Play Console setup and store policy declarations.
+## Signed release (1.1.0, version code 3)
+A separate, non-debuggable release variant is configured:
+
+    ./gradlew assembleRelease testReleaseUnitTest lintRelease
+
+Signed APK: app/build/outputs/apk/release/app-release.apk.
+The delivery copy is ../releases/Footly-1.1.0-release.apk.
+
+The release key and its passwords are in the **private, Git-ignored android/.signing directory**. Back up that entire directory securely; it is required to sign future updates. Never publish it or add it to Git. Builds fail if the signing configuration is missing rather than silently producing an unsigned release.
+
+The earlier debug app must be uninstalled before installing this release because the signatures differ. Firebase account data stays on the server; sign in again and re-enable notifications. Future APK updates signed with this release key can install normally over this release.
+
+This is a signed APK for direct installation, not a Play Store listing or a claim that physical-device testing is complete. Play Console setup, store policy declarations and device validation remain separate.
 
 Verification includes Android WebView configuration, exact-origin restrictions, notification routes/channels, website build checks and browser tests with Firebase emulators for account state, the notification bridge, profile upload, match setup/scoring and community. No physical Android phone or working emulator was available here; on-device video/keyboard/photo-picker/background-notification validation remains required before store release.
