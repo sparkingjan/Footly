@@ -28,3 +28,8 @@ test('players with the same name on opposing teams keep separate statistics', ()
   assert.equal(rows[0].goals,0);assert.equal(rows[0].assists,1);
   assert.equal(rows[1].goals,1);assert.equal(rows[1].assists,0);
 });
+
+test('registered players sharing a name on the same side keep separate statistics',()=>{
+ const rows=playerStats({players:{home:[{uid:'a',name:'Alex'},{uid:'b',name:'Alex'}],away:[]},events:[{playerId:'b',player:'Alex',side:'home',type:'goal'}]});
+ assert.equal(rows[0].goals,0);assert.equal(rows[1].goals,1);
+});

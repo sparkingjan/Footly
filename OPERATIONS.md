@@ -69,3 +69,11 @@ For this target, infrastructure work remains: quota and billing review, pre-warm
 Firestore recommends starting new collections at 500 operations/second and increasing by 50% every five minutes. A cold, sudden 16,667/s database spike cannot be inferred safe from static hosting or these local fixes. See [Firestore scaling guidance](https://firebase.google.com/docs/firestore/best-practices) and [field access rules](https://firebase.google.com/docs/firestore/security/rules-fields).
 
 Security tests and a clean dependency audit reduce known risks; they do not establish that no vulnerabilities remain. Production provider configuration, credentials, deployed rules, App Check, quotas, and paid capacity were not changed during this review.
+
+## Registered-player match creation
+
+New matches use schema 3. The Create Match page selects registered account IDs for both sides; neither side must match the other's size. Emails remain private. The directory contains display names only, keyed by account ID. Existing active accounts were migrated with the owner's explicit approval; registration and sign-in keep each account's entry current.
+
+Roster membership is stored under users/{organizer}/matchRosters/{matchId}/players/{playerId}, with a server-checked registered-player name and side. Membership cannot be changed after the parent match is created. Rules require a valid member on each side and zero initial events/scores. Scoring uses roster IDs, and registered-player checks also apply to newly appended events. Existing schema-2 matches remain readable and editable. Old team-setup URLs redirect to Create Match.
+
+Run npm test for build/unit checks and npm run test:browser for Auth/Firestore emulator journeys. The Windows test launcher uses the existing local Java runtime when available. The browser suite covers 3 vs 5 creation, scoring/undo, photo display, account cleanup, and mobile layout.

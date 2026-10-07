@@ -1,3 +1,4 @@
+import {showAvatars} from './avatars.js';
 import { watchMatch } from './match-data.js';
 import { playerStats } from './match-core.js';
 import { firebaseConfigured, requireUser, db, collection, getDocs, getDoc, teamDoc, query, where, orderBy } from './firebase-client.js';
@@ -7,7 +8,7 @@ const localData=()=>{const state=JSON.parse(localStorage.getItem('footlyMvp')||'
 const eventsFor=data=>(data.match?.events||data.state.events||[]);
 function eventRows(data){const events=eventsFor(data);return events.slice().reverse().map(item=>`<div class="commentary-row"><time>${esc(item.minute||item.time||'LIVE')}'</time><span class="event-icon goal">${esc(item.icon||'⚽')}</span><div><b>${esc(item.player||'Match update')}</b><small>${esc(item.note||item.type||'Live match update')}</small></div></div>`).join('')||'<p class="empty">No events recorded yet.</p>'}
 function teamPlayers(data,side){const team=data.state[side==='home'?'team':'awayTeam'],fromTeam=team?.lineup?.length?team.lineup:team?.players||[],fromMatch=data.match?.players?.[side]||[];return fromTeam.length?fromTeam:fromMatch}
-function lineupMarkup(data,side){const players=teamPlayers(data,side),name=side==='home'?data.match.home:data.match.away;return `<div class="lineup"><h3>${esc(name)} <span>${players.length} players</span></h3><div class="player-list">${players.length?players.map((item,index)=>{const p=typeof item==='object'?item:{name:item,position:''};return `<div class="player"><img src="player.png" alt=""><span class="player-number">${String(index+1).padStart(2,'0')}</span><strong>${esc(p.name)}</strong><small>${esc(p.position||'—')}</small></div>`}).join(''):'<p class="empty">No lineup saved for this team.</p>'}</div></div>`}
+function lineupMarkup(data,side){const players=teamPlayers(data,side),name=side==='home'?data.match.home:data.match.away;return `<div class="lineup"><h3>${esc(name)} <span>${players.length} players</span></h3><div class="player-list">${players.length?players.map((item,index)=>{const p=typeof item==='object'?item:{name:item,position:''};return `<div class="player"><span class="community-avatar" data-avatar-user="${esc(p.uid||'')}"><img src="player.png" alt=""></span><span class="player-number">${String(index+1).padStart(2,'0')}</span><strong>${esc(p.name)}</strong><small>${esc(p.position||'—')}</small></div>`}).join(''):'<p class="empty">No lineup saved for this team.</p>'}</div></div>`}
 function individualStats(data){return playerStats({...data.match,events:eventsFor(data)}).map(player=>`<div class="player-stat-row"><span class="player-stat-name">${esc(player.name)} <small>${esc(player.side)} · ${esc(player.position||'')}</small></span><span>${esc(data.match.minute||0)}'</span><span>${player.goals}</span><span>${player.assists}</span><span>${player.cards}</span><span>${player.events}</span></div>`).join('')||'<p class="empty">Add named player events in the scorekeeper to build individual stats.</p>'}
 const originalHero=document.querySelector('.details-hero')?.innerHTML,originalGrid=document.querySelector('.details-grid')?.innerHTML;
 function render(data){
@@ -25,7 +26,7 @@ let stop;
 if(firebaseConfigured)requireUser(user=>{
   stop?.();
   if(!user){location.replace('auth.html');return}
-  stop=watchMatch(user.uid,match=>render({state:{},match}),error=>{
+  stop=watchMatch(user.uid,match=>{render({state:{},match});showAvatars();},error=>{
     console.error(error);
     const box=document.querySelector('.match-layout')||document.querySelector('.details-hero');
     box.textContent='Live updates unavailable. Reload to retry.';

@@ -4,7 +4,12 @@ export async function decodeMatch(snapshot) {
   if (!snapshot) return null;
   const match = { ...snapshot.data(), id: snapshot.id };
   // Legacy records used a subcollection. New records save events with the score.
-  if (match.schemaVersion !== 2) {
+  if (match.schemaVersion === 3) {
+    const roster=await getDocs(collection(db,'users',match.organizerId,'matchRosters',match.rosterId,'players'));
+    match.players={home:[],away:[]};
+    for(const member of roster.docs){const player=member.data();if(match.players[player.side])match.players[player.side].push(player);}
+  }
+  if (match.schemaVersion !== 2 && match.schemaVersion !== 3) {
     const events = await getDocs(query(collection(db, 'matches', match.id, 'events'), orderBy('createdAt', 'desc'), limit(501)));
     if(events.size>500)throw new Error('This legacy match has more than 500 events and needs migration before editing.');
     if (!events.empty) match.events = events.docs.reverse().map(item => ({ ...item.data(), id: item.id }));

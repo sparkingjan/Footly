@@ -34,10 +34,10 @@ try{
  await page.goto(url+'app.html');await page.locator('.menu-toggle').click();
  assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'),'true');
  await page.keyboard.press('Escape');assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'),'false');
- await page.locator('.menu-toggle').click();await page.locator('.rail-nav a[href="team-setup.html"]').click();await page.waitForURL('**/team-setup.html');
+ await page.locator('.menu-toggle').click();await page.locator('.rail-nav a[href="add-match.html"]').click();await page.waitForURL('**/add-match.html');
  await page.screenshot({path:'test-results/team-mobile.png',fullPage:true});
  for(const file of ['auth.html','features.html','the-game.html','add-match.html','team-setup.html','away-team.html']){
-  await page.goto(url+file);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,file);
+  await page.goto(url+file);if(['team-setup.html','away-team.html'].includes(file))await page.waitForURL('**/add-match.html');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,file);
  }
  assert.deepEqual(errors,[]);
  console.log('PASS: video playback, no video button, right alignment, entrance animation, reduced motion, menus, keyboard dismissal, 320/390px layouts.');

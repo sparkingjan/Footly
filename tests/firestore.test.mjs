@@ -63,3 +63,24 @@ test('profile photos enforce owner, size, trusted timestamp and annual lock',{sk
  await assertSucceeds(setDoc(ref,{...photo,image:Bytes.fromUint8Array(new Uint8Array(19999))}));
  await assertFails(setDoc(ref,photo));
 });
+
+test('new matches require registered rosters, distinct sides and immutable memberships',{skip:!enabled},async()=>{
+ const db=env.authenticatedContext('roster-owner').firestore();
+ await env.withSecurityRulesDisabled(async context=>{for(const uid of ['p1','p2','p3'])await setDoc(doc(context.firestore(),'registeredPlayers',uid),{displayName:uid});});
+ const member=uid=>doc(db,'users','roster-owner','matchRosters','registered-match','players',uid);
+ await assertFails(setDoc(member('fake'),{uid:'fake',name:'Fake',side:'home'}));
+ await assertFails(setDoc(doc(db,'registeredPlayers','someone-else'),{displayName:'Fake'}));
+ await assertFails(setDoc(member('p1'),{uid:'p1',name:'Impersonation',side:'home'}));
+ await assertSucceeds(setDoc(member('p1'),{uid:'p1',name:'p1',side:'home'}));
+ await assertSucceeds(setDoc(member('p2'),{uid:'p2',name:'p2',side:'away'}));
+ await assertSucceeds(setDoc(member('p3'),{uid:'p3',name:'p3',side:'away'}));
+ await assertFails(setDoc(member('p1'),{uid:'p1',name:'p1',side:'away'}));
+ const match={organizerId:'roster-owner',home:'Home',away:'Away',homeScore:0,awayScore:0,minute:1,events:[],createdAt:serverTimestamp(),revision:0,schemaVersion:3,rosterId:'registered-match',homeCaptainUid:'p1',awayCaptainUid:'p2'};
+ const ref=doc(db,'matches','registered-match');
+ await assertFails(setDoc(ref,{...match,players:{home:['fake'],away:['p2']}}));
+ await assertSucceeds(setDoc(ref,match));
+ await assertFails(deleteDoc(member('p1')));
+ await assertFails(updateDoc(ref,{revision:1,events:[{id:'x',playerId:'fake',player:'Fake',side:'home'}]}));
+ await assertSucceeds(updateDoc(ref,{revision:1,homeScore:1,events:[{id:'goal',type:'goal',playerId:'p1',player:'p1',side:'home'}]}));
+ await assertSucceeds(updateDoc(ref,{revision:2,homeScore:0,events:[]}));
+});

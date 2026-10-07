@@ -13,6 +13,7 @@ function cache() {
   localStorage.setItem('footlyMatch', JSON.stringify(match));
 }
 function render() {
+  if(match.schemaVersion===3)renderPlayerOptions();
   $('home-name').textContent = match.home; $('away-name').textContent = match.away;
   $('home-score').textContent = match.homeScore; $('away-score').textContent = match.awayScore;
   $('match-minute').value = match.minute || 1;
@@ -31,14 +32,20 @@ async function persist(next) {
         const snapshot = await transaction.get(ref);
         if (!snapshot.exists() || snapshot.data().organizerId !== auth.currentUser.uid) throw new Error('This match is no longer available.');
         if ((snapshot.data().revision || 0) !== (match.revision || 0)) throw new Error('This match changed in another tab. Reload before editing.');
-        transaction.update(ref, { homeScore: next.homeScore, awayScore: next.awayScore, minute: next.minute, events: next.events, schemaVersion: 2, revision: (match.revision || 0) + 1, updatedAt: serverTimestamp() });
+        transaction.update(ref, { homeScore: next.homeScore, awayScore: next.awayScore, minute: next.minute, events: next.events, schemaVersion: match.schemaVersion || 2, revision: (match.revision || 0) + 1, updatedAt: serverTimestamp() });
       });
     }
-    match = { ...next, revision: (match.revision || 0) + 1, schemaVersion: 2 };
+    match = { ...next, revision: (match.revision || 0) + 1, schemaVersion: match.schemaVersion || 2 };
     cache(); render(); status.textContent = firebaseConfigured ? 'Saved to your account' : 'Saved in this browser';
   } catch (error) { status.textContent = error.message || 'Could not save. Please retry.'; }
   finally { busy = false; disable(false); }
 }
+function renderPlayerOptions(){
+ let field=$('event-player');const value=field.value;if(field.tagName!=='SELECT'){const select=document.createElement('select');select.id='event-player';select.required=true;select.setAttribute('aria-label','Player');field.replaceWith(select);field=select;}
+ field.innerHTML=(match.players?.[$('event-side').value]||[]).map(p=>`<option value="${escapeHtml(p.uid)}">${escapeHtml(p.name)} (${escapeHtml(p.uid.slice(0,6))})</option>`).join('');
+ if([...field.options].some(o=>o.value===value))field.value=value;
+}
+$('event-side').addEventListener('change',()=>{if(match?.schemaVersion===3)renderPlayerOptions();});
 document.querySelectorAll('[data-score]').forEach(button => button.addEventListener('click', () => {
   if (!match || busy) return;
   if (button.dataset.score === 'undo') {
@@ -46,7 +53,7 @@ document.querySelectorAll('[data-score]').forEach(button => button.addEventListe
     if(next===match){status.textContent='No goal with a recorded team is available to undo.';return}
     return persist(next);
   }
-  $('event-side').value = button.dataset.score; $('event-type').value = '⚽'; $('event-player').focus();
+  $('event-side').value = button.dataset.score;if(match.schemaVersion===3)renderPlayerOptions(); $('event-type').value = '⚽'; $('event-player').focus();
   status.textContent = 'Enter the scorer, then add the event.';
 }));
 $('event-form').addEventListener('submit', async event => {
@@ -54,7 +61,9 @@ $('event-form').addEventListener('submit', async event => {
   const icon = $('event-type').value;
   const type = { '⚽': 'goal', '🟨': 'yellow', '🟥': 'red', '↔': 'substitution', 'A': 'assist' }[icon];
   try {
-    const next = recordEvent({ ...match, minute: Number($('match-minute').value) }, { id: crypto.randomUUID(), type, icon, side: $('event-side').value, player: $('event-player').value.trim(), note: $('event-note').value.trim() || type, minute: Number($('match-minute').value) });
+    const selected=match.schemaVersion===3?(match.players?.[$('event-side').value]||[]).find(p=>p.uid===$('event-player').value):null;
+    if(match.schemaVersion===3&&!selected)throw new Error('Choose a registered player from this side.');
+    const next = recordEvent({ ...match, minute: Number($('match-minute').value) }, { id: crypto.randomUUID(), type, icon, side: $('event-side').value, player: selected?.name||$('event-player').value.trim(), ...(selected?{playerId:selected.uid}:{}), note: $('event-note').value.trim() || type, minute: Number($('match-minute').value) });
     await persist(next);
   } catch (error) { status.textContent = error.message; }
 });

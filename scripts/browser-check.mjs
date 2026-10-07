@@ -2,7 +2,7 @@ import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
-const cloud=process.env.EMULATOR_TEST==='1';
+const cloud=process.env.EMULATOR_TEST==='1'||Boolean(process.env.FIRESTORE_EMULATOR_HOST);
 const server=spawn(process.execPath,['scripts/preview.mjs'],{stdio:['ignore','pipe','inherit'],windowsHide:true});
 await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);server.once('exit',code=>reject(new Error(`Preview exited ${code}`)))});
 let browser;
@@ -21,21 +21,27 @@ try{
   const page=await context.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));page.on('console',message=>{if(message.type()==='error'&&/Content Security Policy|Refused to/.test(message.text()))errors.push(message.text())});
   const url='http://127.0.0.1:5173/';
   if(cloud){await page.goto(url+'auth.html?mode=signup');await page.locator('#email').fill(`test-${Date.now()}@example.test`);await page.locator('#password').fill('Local-test-only-892!');await page.locator('#submit').click();await page.waitForURL('**/app.html')}
-  for(const [file,name] of [['team-setup.html','Home <img src=x onerror=alert(1)>'],['away-team.html','Away']]){
-    await page.goto(url+file);await page.locator('#team-name').fill(name);await page.locator('#team-format').selectOption('3-a-side');
-    await page.locator('#players').fill('Keeper\nStriker\nMidfielder\nSubstitute');await page.locator('#captain').selectOption('Keeper');
-    await page.getByRole('button',{name:'Substitute',exact:true}).click();await page.locator('.pitch-player[data-name="Striker"] small').click();
-    assert.equal(await page.locator('.pitch-player[data-name="Substitute"]').count(),1);
-    await page.locator('.builder-form button[type=submit]').click();await page.getByText('Team saved. You can now create a match.').waitFor();
-    await page.reload();await page.locator('.pitch-player[data-name="Substitute"]').waitFor();
-    assert.equal(await page.locator('#football-pitch img[onerror]').count(),0);
+  if(!cloud)throw new Error('Registered-player flows require EMULATOR_TEST=1 with Auth and Firestore emulators.');
+  for(let i=0;i<8;i++){
+    const response=await fetch('http://127.0.0.1:8080/v1/projects/demo-footly/databases/(default)/documents/registeredPlayers/player-'+i,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer owner'},body:JSON.stringify({fields:{displayName:{stringValue:'Player '+i}}})});assert(response.ok);
   }
-  await page.goto(url+'add-match.html');await page.locator('#venue').fill('Community pitch');await page.locator('#match-date').fill('2026-10-06T18:30');await page.locator('button[type=submit]').click();await page.waitForURL('**/live-scorekeeper.html');await page.getByText('Ready. Select a team and record an event.').waitFor();
-  async function event(side,type,player){await page.locator('#event-side').selectOption(side);await page.locator('#event-type').selectOption(type);await page.locator('#event-player').fill(player);await page.locator('#event-note').fill('<img src=x onerror=alert(1)>');await page.locator('#event-form button').click();await page.getByText(cloud?'Saved to your account':'Saved in this browser',{exact:true}).waitFor()}
-  await event('home','⚽','Substitute');await event('away','⚽','Substitute');await event('away','🟨','Keeper');await page.locator('[data-score=undo]').click();
+  await page.goto(url+'add-match.html');await page.locator('[data-add="player-0"][data-side="home"]').waitFor();
+  await page.locator('#match-home').fill('Home <img src=x onerror=alert(1)>');
+  for(let i=0;i<8;i++)await page.locator(`[data-add="player-${i}"][data-side="${i<3?'home':'away'}"]`).click();
+  assert.equal(await page.locator('#format-preview').textContent(),'3 vs 5');
+  assert.equal(await page.locator('[data-add="player-0"]').count(),0);
+  await page.locator('#venue').fill('Community pitch');await page.locator('#match-date').fill('2026-10-06T18:30');
+  await page.locator('#match-home').focus();await page.evaluate(()=>document.activeElement.blur());
+  assert.equal(await page.locator('.selected-player').first().locator('span').nth(1).evaluate(el=>el.getBoundingClientRect().width>60),true);
+  await page.evaluate(()=>{window.scrollTo({top:0,behavior:'instant'});document.querySelector('.registered-results').scrollTop=0});
+  await page.screenshot({path:'test-results/create-match-mobile.png',fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'test-results/create-match-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});
+  await page.locator('#match-submit').click();await page.waitForURL('**/live-scorekeeper.html');await page.getByText('Ready. Select a team and record an event.').waitFor();
+  async function event(side,type,player){await page.locator('#event-side').selectOption(side);await page.locator('#event-type').selectOption(type);await page.locator('#event-player').selectOption(player);await page.locator('#event-note').fill('<img src=x onerror=alert(1)>');await page.locator('#event-form button').click();await page.getByText(cloud?'Saved to your account':'Saved in this browser',{exact:true}).waitFor()}
+  await event('home','⚽','player-0');await event('away','⚽','player-3');await event('away','🟨','player-4');await page.locator('[data-score=undo]').click();
   await page.getByText(cloud?'Saved to your account':'Saved in this browser',{exact:true}).waitFor();
   assert.equal(await page.locator('#home-score').textContent(),'1');assert.equal(await page.locator('#away-score').textContent(),'0');assert.equal(await page.locator('#feed .feed-row').count(),2);assert.equal(await page.locator('#feed img').count(),0);
-  await page.reload();await page.locator('#event-form button:enabled').waitFor();assert.equal(await page.locator('#home-score').textContent(),'1');
+  await page.reload();await page.getByText('Ready. Select a team and record an event.').waitFor();assert.equal(await page.locator('#home-score').textContent(),'1');
   await mkdir('test-results',{recursive:true});await page.screenshot({path:'test-results/scorekeeper-mobile.png',fullPage:true});
   for(const file of ['app.html','live-matches.html','match-details.html','match-summary.html','match-commentary.html','match-lineups.html','match-stats.html','stats.html','profile.html','community.html']){
     await page.goto(url+file);await page.locator('body').waitFor();await page.waitForTimeout(400);
@@ -63,7 +69,8 @@ try{
     page.once('dialog',dialog=>dialog.accept());await page.locator('.post-delete').click();await page.getByText('No discussions yet. Start the first one.').waitFor();
     await page.goto(url+'profile.html');
 
+    page.once('dialog',dialog=>dialog.accept());await page.locator('#clear-matches').click();await page.getByText('Match history deleted').waitFor();
     await page.locator('#portal-logout').click();await page.waitForURL('**/auth.html');assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
   }
-  assert.deepEqual(errors,[]);console.log('PASS: team save/reload/substitution, match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');
+  assert.deepEqual(errors,[]);console.log('PASS: registered-player 3 vs 5 match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');
 }finally{await browser?.close();server.kill()}

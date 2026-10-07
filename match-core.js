@@ -14,7 +14,7 @@ export function playerStats(match) {
   const players = ['home', 'away'].flatMap(side => (match.players?.[side] || []).map(player => ({ ...(typeof player === 'object' ? player : { name: player }), side })));
   return players.map(player => {
     const unique = players.filter(other => other.name === player.name).length === 1;
-    const events = (match.events || []).filter(event => event.player === player.name && (event.side === player.side || (!event.side && unique)));
+    const events = (match.events || []).filter(event => (event.playerId ? event.playerId === player.uid : event.player === player.name) && (event.side === player.side || (!event.side && unique)));
     return { ...player, events: events.length, goals: events.filter(event => event.type === 'goal' || event.icon === '⚽').length, assists: events.filter(event => event.type === 'assist').length, cards: events.filter(event => ['yellow','red'].includes(event.type) || ['🟨','🟥'].includes(event.icon)).length };
   });
 }
