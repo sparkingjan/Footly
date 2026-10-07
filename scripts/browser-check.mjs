@@ -18,11 +18,22 @@ try{
     client=client.replace('if (auth) {', "if(auth){connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});connectFirestoreEmulator(db,'127.0.0.1',8080)}\nif (auth) {");
     await context.route('**/firebase-client.js',route=>route.fulfill({contentType:'text/javascript',body:client}));
   }else await context.route('**/firebase-client.js',route=>route.fulfill({contentType:'text/javascript',body:`export const firebaseConfigured=false,auth=null,db=null;${exports.map(name=>`export const ${name}=()=>{};`).join('')}`}));
+  await context.addInitScript(()=>{
+    window.androidMessages=[];
+    window.FootlyAndroid={postMessage(value){
+      const message=JSON.parse(value);window.androidMessages.push(message);
+      queueMicrotask(()=>window.FootlyAndroid.onmessage?.({data:JSON.stringify({type:'status',enabled:message.type==='enable',message:''})}));
+    }};
+  });
   const page=await context.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));page.on('console',message=>{if(message.type()==='error'&&/Content Security Policy|Refused to/.test(message.text()))errors.push(message.text())});
   const url='http://127.0.0.1:5173/';
   if(cloud){await page.goto(url+'auth.html?mode=signup');await page.locator('#email').fill(`test-${Date.now()}@example.test`);await page.locator('#password').fill('Local-test-only-892!');await page.locator('#submit').click();await page.waitForURL('**/app.html')}
   if(!cloud)throw new Error('Registered-player flows require EMULATOR_TEST=1 with Auth and Firestore emulators.');
   await page.goto(url);await page.getByRole('link',{name:'Log out',exact:true}).waitFor();
+  assert.equal(await page.locator('video.background-video').count(),1);
+  assert.equal(await page.locator('video.background-video').evaluate(v=>v.muted&&v.loop&&v.playsInline),true);
+  assert.equal(await page.evaluate(()=>window.androidMessages.some(m=>m.type==='session'&&m.uid&&Object.keys(m).sort().join(',')==='type,uid')),true);
+
 
   for(let i=0;i<8;i++){
     const response=await fetch('http://127.0.0.1:8080/v1/projects/demo-footly/databases/(default)/documents/registeredPlayers/player-'+i,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer owner'},body:JSON.stringify({fields:{displayName:{stringValue:'Player '+i}}})});assert(response.ok);
@@ -66,6 +77,10 @@ try{
   if(cloud){
     await page.goto(url+'community.html');await page.locator('#post-text').fill('Test discussion <img src=x onerror=alert(1)>');await page.locator('#post-submit').click();await page.locator('.discussion-post').waitFor();assert.equal(await page.locator('.discussion-post img').count(),0);page.once('dialog',dialog=>dialog.accept());await page.locator('.post-delete').click();await page.getByText('No discussions yet. Start the first one.').waitFor();
     await page.goto(url+'profile.html');await page.locator('#photo-add:enabled').waitFor();
+    await page.getByRole('button',{name:'Enable notifications',exact:true}).click();
+    await page.getByRole('button',{name:'Turn off notifications',exact:true}).click();
+    await page.getByRole('button',{name:'Enable notifications',exact:true}).waitFor();
+
     await page.locator('#photo-file').setInputFiles({name:'large.png',mimeType:'image/png',buffer:Buffer.alloc(20000)});
     await page.getByText('Choose an image smaller than 20 KB (20,000 bytes).',{exact:true}).waitFor();
     const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWZkAAAAASUVORK5CYII=','base64');
@@ -84,6 +99,8 @@ try{
     page.once('dialog',dialog=>dialog.accept());await page.locator('#clear-matches').click();await page.getByText('Match history deleted').waitFor();
     await page.goto(url);await page.getByRole('link',{name:'Log out',exact:true}).click();await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
     await page.goto(url);await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>window.androidMessages.some(m=>m.type==='session'&&m.uid==='')),true);
+
 
   }
   assert.deepEqual(errors,[]);console.log('PASS: registered-player 3 vs 5 match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');

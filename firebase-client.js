@@ -1,3 +1,4 @@
+import { syncAndroidAccount } from './android-bridge.js';
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, onSnapshot, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
@@ -13,6 +14,7 @@ if (auth) {
   await auth.authStateReady();
   let activeUid = auth.currentUser?.uid || '';
   const clearAccount = user => {
+    syncAndroidAccount(user);
     const uid = user?.uid || '';
     if (localStorage.getItem('footlyAccount') !== uid) {
       for (const key of ['footlyMvp', 'footlyTeams', 'footlyMatch']) localStorage.removeItem(key);
