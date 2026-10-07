@@ -13,3 +13,4 @@ body.home-page{background:#14271f;color:#fff;overflow:auto}.home-header{position
 @keyframes home-slide-in{from{opacity:0;transform:translate3d(90px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 @media(max-width:760px){.home-copy{width:100%}.home-copy h1{font-size:clamp(54px,12vw,86px)}.home-copy .home-actions{gap:14px}.home-copy .home-description{max-width:310px}.cinema:before{background:linear-gradient(270deg,#0b1b16e8,#0c1f1788),linear-gradient(0deg,#0c1b17b0,transparent 40%)}}
 @media(prefers-reduced-motion:reduce){.home-copy>*{animation:none}}
+@media(max-width:760px){.home-header{gap:10px}.home-account{display:flex;gap:0;margin-left:auto}.home-account .join-link{display:none}.home-account #home-auth{display:inline-flex;align-items:center;min-height:44px;white-space:nowrap}.home-account #home-auth[hidden]{display:none}}

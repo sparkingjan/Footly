@@ -22,6 +22,8 @@ try{
   const url='http://127.0.0.1:5173/';
   if(cloud){await page.goto(url+'auth.html?mode=signup');await page.locator('#email').fill(`test-${Date.now()}@example.test`);await page.locator('#password').fill('Local-test-only-892!');await page.locator('#submit').click();await page.waitForURL('**/app.html')}
   if(!cloud)throw new Error('Registered-player flows require EMULATOR_TEST=1 with Auth and Firestore emulators.');
+  await page.goto(url);await page.getByRole('link',{name:'Log out',exact:true}).waitFor();
+
   for(let i=0;i<8;i++){
     const response=await fetch('http://127.0.0.1:8080/v1/projects/demo-footly/databases/(default)/documents/registeredPlayers/player-'+i,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer owner'},body:JSON.stringify({fields:{displayName:{stringValue:'Player '+i}}})});assert(response.ok);
   }
@@ -80,7 +82,9 @@ try{
     await page.goto(url+'profile.html');
 
     page.once('dialog',dialog=>dialog.accept());await page.locator('#clear-matches').click();await page.getByText('Match history deleted').waitFor();
-    await page.locator('#portal-logout').click();await page.waitForURL('**/auth.html');assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
+    await page.goto(url);await page.getByRole('link',{name:'Log out',exact:true}).click();await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('footlyMatch')),null);
+    await page.goto(url);await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();
+
   }
   assert.deepEqual(errors,[]);console.log('PASS: registered-player 3 vs 5 match creation, both goal sides, cards, undo, persistence, XSS rendering, 10 mobile pages, CSP, browser errors.');
 }finally{await browser?.close();server.kill()}
