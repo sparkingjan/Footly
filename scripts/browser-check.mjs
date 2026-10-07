@@ -29,6 +29,13 @@ try{
   await page.locator('#match-home').fill('Home <img src=x onerror=alert(1)>');
   for(let i=0;i<8;i++)await page.locator(`[data-add="player-${i}"][data-side="${i<3?'home':'away'}"]`).click();
   assert.equal(await page.locator('#format-preview').textContent(),'3 vs 5');
+  const homeMarker=page.locator('#home-pitch [data-player="player-0"]');await homeMarker.focus();await page.keyboard.press('ArrowLeft');
+  await page.locator('#home-roles [data-role-player="player-0"]').selectOption('AMF');
+  assert.equal(await homeMarker.locator('small').textContent(),'AMF');
+  const awayMarker=page.locator('#away-pitch [data-player="player-3"]');await awayMarker.scrollIntoViewIfNeeded();
+  const markerBox=await awayMarker.boundingBox(),pitchBox=await page.locator('#away-pitch').boundingBox();
+  await page.mouse.move(markerBox.x+markerBox.width/2,markerBox.y+markerBox.height/2);await page.mouse.down();await page.mouse.move(pitchBox.x+pitchBox.width*.65,pitchBox.y+pitchBox.height*.55,{steps:5});await page.mouse.up();
+
   assert.equal(await page.locator('[data-add="player-0"]').count(),0);
   await page.locator('#venue').fill('Community pitch');await page.locator('#match-date').fill('2026-10-06T18:30');
   await page.locator('#match-home').focus();await page.evaluate(()=>document.activeElement.blur());
@@ -37,6 +44,9 @@ try{
   await page.screenshot({path:'test-results/create-match-mobile.png',fullPage:true});
   await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.screenshot({path:'test-results/create-match-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});
   await page.locator('#match-submit').click();await page.waitForURL('**/live-scorekeeper.html');await page.getByText('Ready. Select a team and record an event.').waitFor();
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('footlyMatch')));
+  const homePlacement=saved.players.home.find(p=>p.uid==='player-0');assert.equal(homePlacement.x,47);assert.equal(homePlacement.position,'AMF');
+  const awayPlacement=saved.players.away.find(p=>p.uid==='player-3');assert(awayPlacement.x>60&&awayPlacement.x<70);assert(awayPlacement.y>50&&awayPlacement.y<60);
   async function event(side,type,player){await page.locator('#event-side').selectOption(side);await page.locator('#event-type').selectOption(type);await page.locator('#event-player').selectOption(player);await page.locator('#event-note').fill('<img src=x onerror=alert(1)>');await page.locator('#event-form button').click();await page.getByText(cloud?'Saved to your account':'Saved in this browser',{exact:true}).waitFor()}
   await event('home','⚽','player-0');await event('away','⚽','player-3');await event('away','🟨','player-4');await page.locator('[data-score=undo]').click();
   await page.getByText(cloud?'Saved to your account':'Saved in this browser',{exact:true}).waitFor();

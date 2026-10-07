@@ -8,7 +8,7 @@ if(process.env.EMULATOR_TEST==='1'){
   const csp=config.hosting.headers[0].headers.find(header=>header.key==='Content-Security-Policy');
   csp.value=csp.value.replace("connect-src 'self'", "connect-src 'self' http://127.0.0.1:8080 http://127.0.0.1:9099");
 }
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.mp4':'video/mp4'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.mp4':'video/mp4','.svg':'image/svg+xml','.xml':'application/xml','.txt':'text/plain'};
 http.createServer(async(req,res)=>{
   try{
     const route=decodeURIComponent(new URL(req.url,'http://localhost').pathname);

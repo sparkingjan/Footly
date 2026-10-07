@@ -1,0 +1,7 @@
+import {chromium} from '@playwright/test';
+const browser=await chromium.launch({executablePath:process.env.BROWSER_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1200,height:630},deviceScaleFactor:1});
+ await page.setContent(`<style>*{box-sizing:border-box}body{margin:0;background:#152820;color:white;font-family:Arial,sans-serif;padding:65px 75px}header{display:flex;align-items:center;gap:18px;font-size:44px;font-weight:700;letter-spacing:-2px}.mark{display:grid;place-items:center;width:58px;height:62px;border-radius:14px;background:#d8ff62;color:#152820;font-style:italic}h1{font-size:83px;letter-spacing:-5px;line-height:1.05;margin:70px 0 26px;position:relative;z-index:1}h1 span{color:#d8ff62}p{color:#c4d4c8;font-size:24px;margin:0;position:relative;z-index:1}.pitch{position:absolute;right:60px;top:58px;width:325px;height:514px;border:2px solid #68856b;border-radius:16px;opacity:.25}.pitch:before{content:'';position:absolute;top:50%;width:100%;border-top:2px solid #9ab790}.pitch:after{content:'';position:absolute;width:110px;height:110px;border:2px solid #9ab790;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}</style><div class="pitch"></div><header><span class="mark">F</span>footly.</header><h1>Your team.<br><span>Your matchday.</span></h1><p>Lineups. Live scores. Local football.</p>`);
+ await page.screenshot({path:'social-preview.png'});
+}finally{await browser.close();}

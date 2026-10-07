@@ -53,7 +53,10 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.uid == ownerId;
       allow create: if signedIn() && request.auth.uid == ownerId
         && !exists(/databases/$(database)/documents/matches/$(matchId))
-        && request.resource.data.keys().hasOnly(['uid','name','side'])
+        && request.resource.data.keys().hasOnly(['uid','name','side','x','y','position'])
+        && request.resource.data.get('x',50) is number && request.resource.data.get('x',50) >= 0 && request.resource.data.get('x',50) <= 100
+        && request.resource.data.get('y',50) is number && request.resource.data.get('y',50) >= 0 && request.resource.data.get('y',50) <= 100
+        && request.resource.data.get('position','CMF') in ['GK','LB','CB','RB','LWB','RWB','DMF','CMF','LMF','RMF','AMF','LWF','RWF','SS','CF']
         && request.resource.data.uid == playerId
         && request.resource.data.side in ['home','away']
         && request.resource.data.name == get(/databases/$(database)/documents/registeredPlayers/$(playerId)).data.displayName;

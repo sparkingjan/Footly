@@ -77,3 +77,11 @@ New matches use schema 3. The Create Match page selects registered account IDs f
 Roster membership is stored under users/{organizer}/matchRosters/{matchId}/players/{playerId}, with a server-checked registered-player name and side. Membership cannot be changed after the parent match is created. Rules require a valid member on each side and zero initial events/scores. Scoring uses roster IDs, and registered-player checks also apply to newly appended events. Existing schema-2 matches remain readable and editable. Old team-setup URLs redirect to Create Match.
 
 Run npm test for build/unit checks and npm run test:browser for Auth/Firestore emulator journeys. The Windows test launcher uses the existing local Java runtime when available. The browser suite covers 3 vs 5 creation, scoring/undo, photo display, account cleanup, and mobile layout.
+
+## Position maps and search indexing
+
+Each new match roster can store x/y percentages and a validated football position. Create Match supports pointer dragging, arrow-key positioning, manual roles, and a position key for both unequal squads. Saved positions appear in match lineups.
+
+Production canonical origin: https://footlysj.vercel.app. Only the homepage, Features and The Game are included in sitemap.xml. Account, community and match pages carry static noindex directives; robots.txt allows crawling so crawlers can see those directives. Authentication and database rules remain the actual access controls. Public pages have unique titles, descriptions, canonical URLs, sharing metadata and a generated 1200×630 social image. Vercel builds and serves only public/ with the existing security headers.
+
+After deployment, verify ownership in Google Search Console and submit https://footlysj.vercel.app/sitemap.xml. Search Console verification was not configured by this change; indexing and ranking are determined by search engines. Guidance: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap and https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag.

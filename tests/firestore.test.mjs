@@ -71,7 +71,9 @@ test('new matches require registered rosters, distinct sides and immutable membe
  await assertFails(setDoc(member('fake'),{uid:'fake',name:'Fake',side:'home'}));
  await assertFails(setDoc(doc(db,'registeredPlayers','someone-else'),{displayName:'Fake'}));
  await assertFails(setDoc(member('p1'),{uid:'p1',name:'Impersonation',side:'home'}));
- await assertSucceeds(setDoc(member('p1'),{uid:'p1',name:'p1',side:'home'}));
+ await assertFails(setDoc(member('p1'),{uid:'p1',name:'p1',side:'home',x:101,y:50,position:'GK'}));
+ await assertFails(setDoc(member('p1'),{uid:'p1',name:'p1',side:'home',x:50,y:50,position:'FAKE'}));
+ await assertSucceeds(setDoc(member('p1'),{uid:'p1',name:'p1',side:'home',x:50,y:88,position:'GK'}));
  await assertSucceeds(setDoc(member('p2'),{uid:'p2',name:'p2',side:'away'}));
  await assertSucceeds(setDoc(member('p3'),{uid:'p3',name:'p3',side:'away'}));
  await assertFails(setDoc(member('p1'),{uid:'p1',name:'p1',side:'away'}));
